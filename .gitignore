@@ -1,0 +1,56 @@
+# Next.js & Dependencies
+/node_modules
+/.next/
+/out/
+/build
+/.pnp
+.pnp.*
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment Variables & Secrets (NEVER COMMIT)
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+backend/.env.*
+
+# Python & Backend Virtualenvs / Cache / Databases
+backend/venv/
+venv/
+ENV/
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+backend/reuse_local.db
+reuse_local.db
+backend/uploads/
+
+# OS & Logs
+.DS_Store
+*.pem
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Vercel & IDE
+.vercel
+.vscode
+.idea
+
+# Local Demo Scripts & HTML Exports (NEVER COMMIT)
+hackathon-demo-script.html
+*.html
+
+# RE:USE Enterprise Cloud Exclusions Configured
+

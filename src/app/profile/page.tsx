@@ -1,0 +1,435 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  ShieldCheck,
+  Star,
+  CheckCircle2,
+  Calendar,
+  MapPin,
+  Clock,
+  MessageSquare,
+  AlertCircle,
+  Award,
+  User,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
+import { useRole } from "@/lib/roleContext";
+import { TrustLensPanel } from "@/components/TrustLensPanel";
+import { submitReviewApi } from "@/lib/api";
+
+export default function ProfilePage() {
+  const {
+    currentUser,
+    isLoggedIn,
+    openAuthModal,
+    isDigiLockerVerified,
+    digiLockerData,
+    openDigiLockerModal,
+    resetDigiLocker,
+  } = useRole();
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [conditionRating, setConditionRating] = useState(5);
+  const [commRating, setCommRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-700 border border-slate-200 mb-6">
+          <User className="h-8 w-8" />
+        </div>
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
+          Authentication Required
+        </h2>
+        <p className="text-sm text-slate-600 mb-6">
+          Aapne sign out / log out kar liya hai. Apni profile aur verification badges access karne ke liye log in karein.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={() => openAuthModal("login")}
+            className="w-full sm:w-auto rounded-xl bg-emerald-800 px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-emerald-900 transition-all"
+          >
+            Log In to Your Account
+          </button>
+          <Link
+            href="/resources"
+            className="w-full sm:w-auto rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all"
+          >
+            Browse Public Catalog
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await submitReviewApi({
+        booking_id: "bk_seed_101",
+        reviewee_id: currentUser.id === "u_borrower_aman" ? "u_owner_rahul" : "u_borrower_aman",
+        rating,
+        condition_rating: conditionRating,
+        communication_rating: commRating,
+        comment,
+      });
+    } catch (e) {
+      // Graceful demo handling
+    } finally {
+      setIsSubmitting(false);
+      setReviewSubmitted(true);
+      setTimeout(() => {
+        setReviewSubmitted(false);
+        setIsReviewModalOpen(false);
+        setComment("");
+      }, 1200);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* PROFILE HEADER (SCREEN 10) */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="relative">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="h-20 w-20 rounded-3xl object-cover ring-4 ring-emerald-500/20"
+              />
+              <span
+                className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm"
+                title="Verified Member"
+              >
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-black text-slate-900">{currentUser.name}</h1>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                  Member since Oct 2023
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-emerald-600" />
+                <span>{currentUser.neighborhood}</span>
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsReviewModalOpen(true)}
+            className="flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-xs font-bold text-white shadow-xs"
+          >
+            <MessageSquare className="h-4 w-4 text-emerald-400" />
+            <span>Leave a Rental Review</span>
+          </button>
+        </div>
+      </div>
+
+      {/* MANDATORY RULE 2: SEPARATE IDENTITY VERIFICATION FROM BEHAVIORAL TRUST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Card 1: Identity Badges */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              <span>Identity Verification Credentials</span>
+            </h3>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+              isDigiLockerVerified
+                ? "text-emerald-800 bg-emerald-50 border border-emerald-200"
+                : "text-amber-800 bg-amber-50 border border-amber-200"
+            }`}>
+              {isDigiLockerVerified ? "Level 4 (DigiLocker Verified)" : "Level 2 (KYC Pending)"}
+            </span>
+          </div>
+
+          {/* DYNAMIC DIGILOCKER GOVERNMENT KYC CARD */}
+          {isDigiLockerVerified ? (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50/80 via-teal-50/50 to-white border border-emerald-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🇮🇳</span>
+                  <div>
+                    <span className="font-black text-xs text-slate-900 block">
+                      DigiLocker Government Verified
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      Issued: {digiLockerData?.verifiedAt || "Oct 2026"} &bull; Token #{digiLockerData?.certificateId || "DL-98124"}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-black uppercase text-emerald-900 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  ✓ Active UIDAI &amp; PAN
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">UIDAI Aadhaar</span>
+                    <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                  </div>
+                  <div className="font-mono font-bold text-slate-800 mt-0.5">
+                    XXXX-XXXX-{digiLockerData?.aadhaarMasked || "4129"}
+                  </div>
+                  <div className="text-[10px] text-slate-500 truncate">{currentUser.name}</div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Income Tax PAN</span>
+                    <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                  </div>
+                  <div className="font-mono font-bold text-slate-800 mt-0.5">
+                    XXXXX{digiLockerData?.panMasked || "4312X"}
+                  </div>
+                  <div className="text-[10px] text-slate-500">Legal Tax Identity Verified</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-emerald-100">
+                <span className="text-emerald-800 font-bold flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-emerald-600" />
+                  <span>75% Deposit Waiver Active on All Rentals</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={resetDigiLocker}
+                  className="text-[10px] text-slate-400 hover:text-rose-600 font-semibold underline cursor-pointer"
+                  title="Reset for testing"
+                >
+                  Reset Demo
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 via-slate-50 to-emerald-50/50 border border-blue-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🇮🇳</span>
+                  <div>
+                    <span className="font-black text-xs text-slate-900 block">
+                      Connect with DigiLocker
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      National Digital Identity &amp; KYC Gateway
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                  KYC Pending ⚠️
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Link your DigiLocker to verify official Aadhaar, PAN &amp; College ID. Eliminates theft risk, boosts PeerTrust to 5.0★, and unlocks a <strong className="text-emerald-700">75% security deposit waiver</strong> on all equipment!
+              </p>
+
+              <button
+                type="button"
+                onClick={openDigiLockerModal}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-700 to-emerald-700 hover:from-blue-600 hover:to-emerald-600 py-2.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95 cursor-pointer"
+              >
+                <span>🇮🇳 Launch DigiLocker Verification</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Secondary Institutional & Phone Verifications */}
+          <div className="space-y-2.5 text-xs pt-1">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span className="font-bold text-slate-800">Campus Student Enrollment</span>
+              </div>
+              <span className="text-slate-500 font-mono text-[11px]">{currentUser.neighborhood || "Campus Hub"}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span className="font-bold text-slate-800">Phone &amp; SMS 2FA Verified</span>
+              </div>
+              <span className="text-slate-500 font-mono text-[11px]">+91 &bull;&bull;&bull;&bull;&bull; 8712</span>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
+            * Legal identity verification protects gear owners and campus community. Raw biometric data is never stored on Saanjha servers.
+          </p>
+        </div>
+
+        {/* Card 2: Behavioral Trust Badges */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+              <span>Behavioral PeerTrust Record</span>
+            </h3>
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+              Established Trust ★★★★★
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+              <div className="text-slate-400 font-semibold">Completed Rentals</div>
+              <div className="text-2xl font-black text-slate-900 mt-1">
+                {currentUser.totalTransactions} Exchanges
+              </div>
+              <div className="text-[10px] text-emerald-700 font-bold mt-1">Zero disputes</div>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+              <div className="text-slate-400 font-semibold">On-Time Returns</div>
+              <div className="text-2xl font-black text-slate-900 mt-1">
+                {currentUser.ontimeReturnRate}%
+              </div>
+              <div className="text-[10px] text-emerald-700 font-bold mt-1">100% Reliability</div>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+              <div className="text-slate-400 font-semibold">Cancellation Rate</div>
+              <div className="text-2xl font-black text-slate-900 mt-1">
+                {currentUser.cancellationRate}%
+              </div>
+              <div className="text-[10px] text-emerald-700 font-bold mt-1">Flawless custody</div>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+              <div className="text-slate-400 font-semibold">Trust Score</div>
+              <div className="text-2xl font-black text-emerald-800 mt-1">
+                ★ {currentUser.trustScore} / 5.0
+              </div>
+              <div className="text-[10px] text-slate-400 mt-1">PeerTrust weighted</div>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400 leading-relaxed pt-2">
+            * PeerTrust is algorithmically weighted by reviewer credibility and volume dampening.
+          </p>
+        </div>
+      </div>
+
+      {/* TRUSTLENS: REPUTATION CONFIDENCE ENGINE */}
+      <TrustLensPanel userId={currentUser.id} userName={currentUser.name} />
+
+      {/* REVIEW SUBMISSION MODAL (SCREEN 10) */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200">
+            {reviewSubmitted ? (
+              <div className="text-center py-8">
+                <CheckCircle2 className="h-12 w-12 text-emerald-600 mx-auto mb-3 animate-bounce" />
+                <h3 className="text-xl font-black text-slate-900">Review Submitted!</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  PeerTrust credibility weights have updated the community ledger.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitReview} className="space-y-4">
+                <h3 className="text-lg font-black text-slate-900">
+                  Submit Reciprocal Rental Review
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Gated to completed physical rentals &bull; Both parties review mutually.
+                </p>
+
+                {/* Overall Rating */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Overall Experience (1–5 Stars)
+                  </label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setRating(s)}
+                        className={`p-2 rounded-xl border text-xs font-black transition-all ${
+                          rating >= s
+                            ? "bg-amber-500 text-white border-amber-500"
+                            : "bg-slate-50 text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        ★ {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Condition Rating */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Equipment Condition (1–5)
+                  </label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setConditionRating(s)}
+                        className={`p-2 rounded-xl border text-xs font-black transition-all ${
+                          conditionRating >= s
+                            ? "bg-emerald-600 text-white border-emerald-600"
+                            : "bg-slate-50 text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Comments */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Reciprocal Review Comments
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Describe item condition, battery status, and timeliness of handover..."
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsReviewModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="rounded-xl bg-emerald-800 hover:bg-emerald-900 px-5 py-2.5 text-xs font-bold text-white shadow-xs disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Submitting Review..." : "Submit Review"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

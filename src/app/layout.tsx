@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { RoleProvider } from "@/lib/roleContext";
+import { AIChatDrawer } from "@/components/AIChatDrawer";
+import { DigiLockerModal } from "@/components/DigiLockerModal";
+
+export const metadata: Metadata = {
+  title: "Saanjha | Share More. Buy Less.",
+  description:
+    "Smart solutions, smarter society. Saanjha connects college students and nearby communities to share useful resources with agentic and generative AI.",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className="h-full antialiased scroll-smooth" data-scroll-behavior="smooth">
+      <body className="min-h-full flex flex-col bg-[#131313] text-[#e5e2e1] selection:bg-emerald-600 selection:text-white pb-16 lg:pb-0">
+        <RoleProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <AIChatDrawer />
+          <DigiLockerModal />
+        </RoleProvider>
+      </body>
+    </html>
+  );
+}
