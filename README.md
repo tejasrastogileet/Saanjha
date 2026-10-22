@@ -211,7 +211,7 @@ Saanjha System Stack
 ## 🗂️ Project Directory Structure
 
 ```
-reuseproject/
+SAANJHA/
 ├── .gitignore
 ├── AGENTS.md
 ├── ARCHITECTURE.md
@@ -343,7 +343,7 @@ The Next.js frontend is at the repository root, alongside `package.json`, `src/`
 ### 1️⃣ Clone Repository
 ```bash
 git clone https://github.com/tejasrastogileet/Saanjha.git
-cd reuseproject
+cd SAANJHA
 ```
 
 ### 2️⃣ Backend Setup (Python FastAPI)
